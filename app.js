@@ -649,7 +649,7 @@
   $('auth-signup').onclick = function () {
     if (!$('auth-form').reportValidity()) return;
     authMsg(t('auth.creating'));
-    sb.auth.signUp({ email: $('auth-email').value.trim(), password: $('auth-pass').value, options: { emailRedirectTo: location.origin } }).then(function (r) {
+    sb.auth.signUp({ email: $('auth-email').value.trim(), password: $('auth-pass').value, options: { emailRedirectTo: location.origin + location.pathname } }).then(function (r) {
       if (r.error) authMsg(r.error.message, 'err');
       else if (!r.data.session) authMsg(t('auth.created'), 'ok');
     });
