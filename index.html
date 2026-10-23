@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mannington Black Box</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============ CONNEXION ============ -->
+<div class="auth" id="auth" hidden>
+  <form class="modal" id="auth-form">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <div class="brand" style="padding:0"><b>MANNINGTON</b><span>Black Box · MVP</span></div>
+      <select class="inline lang" data-i18n-aria="lang.label"></select>
+    </div>
+    <label class="field"><span data-i18n="auth.email">Adresse e-mail</span><input type="email" id="auth-email" autocomplete="username" required></label>
+    <label class="field"><span data-i18n="auth.pass">Mot de passe</span><input type="password" id="auth-pass" autocomplete="current-password" minlength="8" required></label>
+    <p class="msg" id="auth-msg" hidden></p>
+    <div class="row">
+      <button type="button" class="btn" id="auth-signup" data-i18n="auth.signup">Créer un compte</button>
+      <button type="submit" class="btn primary" data-i18n="auth.login">Se connecter</button>
+    </div>
+    <p class="muted" style="font-size:12px" data-i18n="auth.note">Le premier compte créé reçoit tous les rôles. Les suivants sont attribués par un administrateur.</p>
+  </form>
+</div>
+
+<div class="app" id="app" hidden>
+  <aside class="rail">
+    <div class="brand"><b>MANNINGTON</b><span>Black Box · MVP</span></div>
+    <nav class="nav" id="nav" data-i18n-aria="nav.label" aria-label="Vues">
+      <button data-v="apercu" data-i18n="nav.apercu">Vue d'ensemble</button>
+      <button data-v="actualites"><span data-i18n="nav.actualites">Actualités</span> <span class="cnt" id="c-actualites"></span></button>
+      <button data-v="anomalies"><span data-i18n="nav.anomalies">Anomalies</span> <span class="cnt" id="c-anomalies"></span></button>
+      <button data-v="opportunites"><span data-i18n="nav.opportunites">Opportunités</span> <span class="cnt" id="c-opportunites"></span></button>
+      <button data-v="strategies"><span data-i18n="nav.strategies">Stratégies</span> <span class="cnt" id="c-strategies"></span></button>
+      <button data-v="paper"><span data-i18n="nav.paper">Paper trading</span> <span class="cnt" id="c-paper"></span></button>
+      <button data-v="risque" data-i18n="nav.risque">Risque</button>
+      <button data-v="audit" data-i18n="nav.audit">Audit</button>
+    </nav>
+    <div class="rail-foot">
+      <p data-i18n="rail.note">Cours de marché fictifs, générés par simulation. Aucun capital réel. Les actualités sont réelles.</p>
+      <p style="margin-top:10px" id="who"></p>
+      <button class="btn" id="logout" style="margin-top:8px;font-size:12px" data-i18n="rail.logout">Se déconnecter</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="status">
+      <span class="pill acc lock" data-i18n="st.lock" data-i18n-title="st.lockTitle" title="Le mode réel ne peut pas être activé dans le MVP">Mode simulé · verrouillé</span>
+      <span class="pill good" id="st-risk">Moteur de risque actif</span>
+      <span class="pill" id="st-data"></span>
+      <span class="pill" id="st-recon"></span>
+      <span class="sp"></span>
+      <span class="muted mono" id="clock"></span>
+      <select class="inline lang" data-i18n-aria="lang.label"></select>
+      <button class="btn" id="refresh" data-i18n="st.refresh">Actualiser</button>
+      <button class="btn danger" id="kill-open" data-i18n="st.kill">Arrêt d'urgence</button>
+    </div>
+    <div class="halt" id="halt" hidden>
+      <span id="halt-txt"></span><span class="sp" style="flex:1"></span>
+      <button class="btn" id="resume-open" data-i18n="st.resumeOpen">Reprendre l'activité…</button>
+    </div>
+
+    <section class="view" id="v-apercu"></section>
+    <section class="view" id="v-actualites" hidden></section>
+    <section class="view" id="v-anomalies" hidden></section>
+    <section class="view" id="v-opportunites" hidden></section>
+    <section class="view" id="v-strategies" hidden></section>
+    <section class="view" id="v-paper" hidden></section>
+    <section class="view" id="v-risque" hidden></section>
+    <section class="view" id="v-audit" hidden></section>
+  </div>
+</div>
+
+<!-- ============ ARRÊT D'URGENCE ============ -->
+<div class="overlay" id="kill" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="kill-h">
+    <h2 id="kill-h" style="font-size:18px" data-i18n="st.kill">Arrêt d'urgence</h2>
+    <p class="muted" data-i18n="kill.text">Tout nouvel ordre sera bloqué par le moteur de risque. Les positions existantes ne sont ni annulées ni réduites : cela reste une décision séparée, à prendre selon la procédure.</p>
+    <label class="field"><span data-i18n="kill.reason">Motif</span><input type="text" id="kill-reason" data-i18n-ph="kill.ph" placeholder="Ex. : écart de réconciliation à vérifier"></label>
+    <div class="row"><button class="btn" id="kill-cancel" data-i18n="kill.cancel">Annuler</button><button class="btn danger" id="kill-go" data-i18n="kill.go">Arrêter maintenant</button></div>
+  </div>
+</div>
+<div class="overlay" id="resume" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="res-h">
+    <h2 id="res-h" style="font-size:18px" data-i18n="res.h">Reprendre l'activité</h2>
+    <p class="muted" data-i18n="res.text">La reprise est réservée au responsable du risque. Elle est enregistrée dans le journal d'audit avec votre identité.</p>
+    <label for="r1"><input type="checkbox" id="r1"><span><b data-i18n="res.check">J'ai vérifié la cause de l'arrêt et l'état des positions</b><small data-i18n="res.req">Requis pour reprendre.</small></span></label>
+    <label class="field"><span data-i18n="res.reason">Motif de la reprise</span><input type="text" id="res-reason"></label>
+    <div class="row"><button class="btn" id="res-cancel" data-i18n="res.stay">Rester à l'arrêt</button><button class="btn primary" id="res-go" disabled data-i18n="res.go">Reprendre</button></div>
+  </div>
+</div>
+
+<!-- ============ ORDRE SIMULÉ ============ -->
+<div class="overlay" id="order" hidden>
+  <form class="modal" id="order-form" role="dialog" aria-modal="true" aria-labelledby="ord-h">
+    <h2 id="ord-h" style="font-size:18px" data-i18n="ord.h">Émettre un ordre simulé</h2>
+    <p class="muted" data-i18n="ord.text">L'ordre passe par le moteur de risque. S'il est accepté, il est exécuté au dernier cours de clôture, slippage et frais inclus.</p>
+    <label class="field"><span data-i18n="ord.strat">Stratégie</span><select id="ord-strat" required></select></label>
+    <label class="field"><span data-i18n="ord.inst">Instrument</span><select id="ord-inst" required></select></label>
+    <label class="field"><span data-i18n="ord.side">Sens</span><select id="ord-side"><option value="buy" data-i18n="ord.buy">Achat</option><option value="sell" data-i18n="ord.sell">Vente</option></select></label>
+    <label class="field"><span data-i18n="ord.qty">Quantité</span><input type="number" id="ord-qty" min="0.0001" step="any" value="5" required></label>
+    <p class="muted mono" id="ord-est"></p>
+    <div class="row"><button type="button" class="btn" id="ord-cancel" data-i18n="kill.cancel">Annuler</button><button type="submit" class="btn primary" data-i18n="ord.submit">Soumettre au moteur de risque</button></div>
+  </form>
+</div>
+
+<div id="toast" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="i18n.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
